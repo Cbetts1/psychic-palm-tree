@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT"
+
+if ! command -v python3 &>/dev/null && ! command -v python &>/dev/null; then
+  echo "Python is required to run AURa."
+  exit 1
+fi
+
+PYTHON_BIN=$(command -v python3 || command -v python)
+exec "$PYTHON_BIN" -m core.runtime.vhost
