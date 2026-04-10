@@ -2,12 +2,12 @@ from core.runtime.identity_banner import print_boot_banner
 from core.runtime.identity_banner import aura_status_line
 from core.runtime.vnet import VNet
 from core.runtime.cloud_link import CloudLink
-from core.runtime.safe_mode import SafeMode
 from core.runtime.vfs import HybridVFS
 from core.runtime.logs import write_log
 from core.runtime.version import load_version
 import importlib.util
 import os
+
 
 def _load_bridge(path):
     platform = os.path.basename(os.path.dirname(path))
@@ -16,6 +16,7 @@ def _load_bridge(path):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
 
 def detect_host():
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -27,31 +28,36 @@ def detect_host():
     bridge = _load_bridge(path)
     return bridge.detect_capabilities()
 
+
 def main():
     print_boot_banner()
 
     ver = load_version()
     write_log(f"AURa version {ver['version']} channel={ver['channel']}")
-    print(f"Version : {ver['version']}  [{ver['channel']}]")
+    print(f"  Version : {ver['version']}  [{ver['channel']}]")
 
     host = detect_host()
     write_log(f"Host detected: {host['os']} ({host['cpu_arch']})")
-    print(f"Host    : {host['os']} ({host['cpu_arch']})")
+    print(f"  Host    : {host['os']} ({host['cpu_arch']})")
 
-    vnet = VNet()
+    vnet  = VNet()
     cloud = CloudLink()
-    safe = SafeMode()
-    vfs = HybridVFS()
-    vfs.ensure_paths()
+    vfs   = HybridVFS()
 
-    cloud.connect()
-    write_log("Cloud link checked")
+    # ── Boot sequence stabilizer ──────────────────────────────────────────────
+    from core.runtime.boot_sequence import run_boot_sequence
+    env_ctx = run_boot_sequence(host, vnet, cloud, vfs)
 
-    print("Boot OK — launching menu…")
-    print(aura_status_line())
+    # ── Boot menu: choose host mode ───────────────────────────────────────────
+    from ui.menu.boot_menu import show_boot_menu
+    boot_mode = show_boot_menu(env_ctx)
+    env_ctx["boot_mode"] = boot_mode
+    write_log(f"Boot mode selected: {boot_mode}")
 
+    # ── Operator console ──────────────────────────────────────────────────────
     from ui.menu.main_menu import launch_menu
-    launch_menu()
+    launch_menu(env_ctx)
+
 
 if __name__ == "__main__":
     main()

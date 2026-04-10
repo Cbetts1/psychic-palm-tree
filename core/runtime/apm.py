@@ -2,10 +2,11 @@ import os
 import json
 import uuid
 from core.runtime.logs import write_log
+from core.runtime.paths import aura_path
 
-PKG_ROOT  = "/aura/local/packages"
-REGISTRY  = "/aura/cloud/packages"
-META_PATH = "/aura/local/cache/packages.json"
+PKG_ROOT  = aura_path("local", "packages")
+REGISTRY  = aura_path("cloud", "packages")
+META_PATH = aura_path("local", "cache", "packages.json")
 
 _PKG_SUBDIRS = ["workers", "commands", "assets", "hooks"]
 

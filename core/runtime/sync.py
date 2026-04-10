@@ -2,9 +2,10 @@ import os
 import shutil
 from core.runtime.identity import load_identity
 from core.runtime.logs import write_log
+from core.runtime.paths import aura_path
 
-CLOUD_ROOT = "/aura/cloud"
-LOCAL_CACHE = "/aura/local/cache"
+CLOUD_ROOT  = aura_path("cloud")
+LOCAL_CACHE = aura_path("local", "cache")
 
 def sync_push():
     write_log("Sync push started")
