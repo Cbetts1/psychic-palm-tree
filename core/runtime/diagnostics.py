@@ -2,7 +2,7 @@ import os
 import datetime
 import platform as _platform
 
-from core.runtime.logs import read_log, write_log
+from core.runtime.logs import read_log, write_log, LOG_PATH
 from core.runtime.identity import load_identity
 from core.runtime.version import load_version
 from core.runtime.vfs import HybridVFS
@@ -75,7 +75,7 @@ def crash_report(exc):
         "",
         "Traceback:",
         tb,
-        "State saved to /aura/local/cache/system.log",
+        f"State saved to: {LOG_PATH}",
     ])
 
 
@@ -91,6 +91,6 @@ def session_summary(start_time):
         f"  Ended    : {datetime.datetime.now().isoformat()}",
         f"  Duration : {str(elapsed).split('.')[0]}",
         f"  Jobs run : {len(procs)}",
-        f"  Log      : /aura/local/cache/system.log",
+        f"  Log      : {LOG_PATH}",
         "────────────────────────────────────────────",
     ])

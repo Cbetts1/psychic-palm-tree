@@ -1,11 +1,12 @@
 import os
 import json
+from core.runtime.paths import aura_path
 
-CONFIG_PATH = "/aura/local/cache/aura.json"
+CONFIG_PATH = aura_path("local", "cache", "aura.json")
 
 _DEFAULTS = {
     "cloud": {
-        "endpoint": "https://example-cloud-endpoint.com",
+        "endpoint": "",
         "timeout": 5,
         "api_key": None,
     },
@@ -18,10 +19,10 @@ _DEFAULTS = {
         "auto_check": False,
     },
     "storage": {
-        "cloud_root": "/aura/cloud",
-        "local_cache": "/aura/local/cache",
-        "packages": "/aura/local/packages",
-        "models": "/aura/local/cache/models",
+        "cloud_root":   aura_path("cloud"),
+        "local_cache":  aura_path("local", "cache"),
+        "packages":     aura_path("local", "packages"),
+        "models":       aura_path("local", "cache", "models"),
     },
     "network": {
         "mode": "auto",
@@ -67,9 +68,13 @@ def get(section, key=None):
 
 def set_value(section, key, value):
     cfg = load_config()
-    if section not in cfg:
-        cfg[section] = {}
-    cfg[section][key] = value
+    if key is None:
+        # Top-level scalar (e.g. safe_mode)
+        cfg[section] = value
+    else:
+        if section not in cfg or not isinstance(cfg[section], dict):
+            cfg[section] = {}
+        cfg[section][key] = value
     save_config(cfg)
 
 

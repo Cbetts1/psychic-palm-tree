@@ -1,26 +1,27 @@
 import os
+from core.runtime.paths import aura_path
 
 
 class HybridVFS:
     def __init__(self):
         self.mounts = {
-            "cloud":     "/aura/cloud",
-            "cache":     "/aura/local/cache",
-            "packages":  "/aura/local/packages",
+            "cloud":    aura_path("cloud"),
+            "cache":    aura_path("local", "cache"),
+            "packages": aura_path("local", "packages"),
         }
         self._subdirs = [
             # cloud output buckets
-            "/aura/cloud/images",
-            "/aura/cloud/videos",
-            "/aura/cloud/apk",
-            "/aura/cloud/docs",
-            "/aura/cloud/models",
-            "/aura/cloud/index",
-            "/aura/cloud/search",
-            "/aura/cloud/manifests",
+            aura_path("cloud", "images"),
+            aura_path("cloud", "videos"),
+            aura_path("cloud", "apk"),
+            aura_path("cloud", "docs"),
+            aura_path("cloud", "models"),
+            aura_path("cloud", "index"),
+            aura_path("cloud", "search"),
+            aura_path("cloud", "manifests"),
             # local cache layers
-            "/aura/local/cache/models",
-            "/aura/local/packages",
+            aura_path("local", "cache", "models"),
+            aura_path("local", "packages"),
         ]
 
     def ensure_paths(self):

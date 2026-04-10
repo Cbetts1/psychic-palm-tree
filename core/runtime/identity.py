@@ -1,8 +1,9 @@
 import os
 import uuid
 import json
+from core.runtime.paths import aura_path
 
-IDENTITY_PATH = "/aura/local/cache/identity.json"
+IDENTITY_PATH = aura_path("local", "cache", "identity.json")
 
 def _ensure_dir():
     os.makedirs(os.path.dirname(IDENTITY_PATH), exist_ok=True)

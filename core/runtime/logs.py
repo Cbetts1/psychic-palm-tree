@@ -1,7 +1,8 @@
 import os
 import datetime
+from core.runtime.paths import aura_path
 
-LOG_PATH = "/aura/local/cache/system.log"
+LOG_PATH = aura_path("local", "cache", "system.log")
 
 def _ensure_log():
     os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)

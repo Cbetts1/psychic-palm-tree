@@ -1,7 +1,8 @@
 import os
 import json
+from core.runtime.paths import aura_path
 
-VERSION_PATH = "/aura/local/cache/version.json"
+VERSION_PATH = aura_path("local", "cache", "version.json")
 
 CHANNELS = {
     "stable": "0.9.0",
