@@ -1,12 +1,31 @@
-from cloud.workers import run_image_job, run_video_job, run_apk_job, run_docs_job
+from cloud.workers import (
+    run_image_job,
+    run_video_job,
+    run_apk_job,
+    run_docs_job,
+    run_models_job,
+    run_index_job,
+    run_search_job,
+)
+
+_WORKER_MAP = {
+    "image":  run_image_job,
+    "video":  run_video_job,
+    "apk":    run_apk_job,
+    "docs":   run_docs_job,
+    "models": run_models_job,
+    "index":  run_index_job,
+    "search": run_search_job,
+}
+
 
 def route_worker(job_type, payload):
-    if job_type == "image":
-        return run_image_job(payload)
-    if job_type == "video":
-        return run_video_job(payload)
-    if job_type == "apk":
-        return run_apk_job(payload)
-    if job_type == "docs":
-        return run_docs_job(payload)
-    return {"error": "unknown job type"}
+    fn = _WORKER_MAP.get(job_type)
+    if fn is None:
+        return {"error": f"unknown job type: '{job_type}'"}
+    return fn(payload)
+
+
+def list_workers():
+    return list(_WORKER_MAP.keys())
+
