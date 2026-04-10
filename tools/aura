@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# tools/aura — AURa OS User-Space Bootloader
+# Bootstraps the AURa runtime from any POSIX shell (Android/Termux, Linux, container).
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Locate Python 3
+if command -v python3 &>/dev/null; then
+    PYTHON_BIN="python3"
+elif command -v python &>/dev/null && python --version 2>&1 | grep -q "Python 3"; then
+    PYTHON_BIN="python"
+else
+    echo "AURa requires Python 3. Please install it and try again."
+    exit 1
+fi
+
+# Run from repo root so all module imports resolve correctly
+cd "$REPO_ROOT"
+
+exec "$PYTHON_BIN" -m core.runtime.vhost "$@"

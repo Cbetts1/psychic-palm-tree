@@ -11,8 +11,8 @@ def aura_banner():
 ────────────────────────────────────────
         A U R a   O S   v0.9
 ────────────────────────────────────────
- Device UUID : {ident[device_uuid]}
- Cloud UUID  : {ident[cloud_uuid]}
+ Device UUID : {ident["device_uuid"]}
+ Cloud UUID  : {ident["cloud_uuid"]}
 ────────────────────────────────────────
 """
 
@@ -20,7 +20,7 @@ def aura_status_line():
     scheduler = JobScheduler()
     sync = sync_status()
     cpu = scheduler.status()["cpu"]
-    return f"[CPU {cpu[load]*100:.0f}%]  [Jobs {len(scheduler.status()[processes])}]  [Cloud {sync[cloud_uuid]}]"
+    return f"[CPU {cpu['load']*100:.0f}%]  [Jobs {len(scheduler.status()['processes'])}]  [Cloud {sync['cloud_uuid']}]"
 
 def print_boot_banner():
     banner = aura_banner()
