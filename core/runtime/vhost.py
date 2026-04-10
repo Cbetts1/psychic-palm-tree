@@ -5,6 +5,7 @@ from core.runtime.cloud_link import CloudLink
 from core.runtime.safe_mode import SafeMode
 from core.runtime.vfs import HybridVFS
 from core.runtime.logs import write_log
+from core.runtime.version import load_version
 import importlib.util
 import os
 
@@ -29,9 +30,13 @@ def detect_host():
 def main():
     print_boot_banner()
 
+    ver = load_version()
+    write_log(f"AURa version {ver['version']} channel={ver['channel']}")
+    print(f"Version : {ver['version']}  [{ver['channel']}]")
+
     host = detect_host()
     write_log(f"Host detected: {host['os']} ({host['cpu_arch']})")
-    print(f"Host: {host['os']} ({host['cpu_arch']})")
+    print(f"Host    : {host['os']} ({host['cpu_arch']})")
 
     vnet = VNet()
     cloud = CloudLink()
