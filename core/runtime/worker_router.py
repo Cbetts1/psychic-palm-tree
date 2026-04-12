@@ -8,10 +8,6 @@ from cloud.workers import (
     run_search_job,
 )
 
-from cloud.workers.test_audio_gen import run_test_audio_gen_job
-
-from cloud.workers.agent_test_worker import run_agent_test_worker_job
-
 _WORKER_MAP = {
     "image":  run_image_job,
     "video":  run_video_job,
@@ -20,8 +16,6 @@ _WORKER_MAP = {
     "models": run_models_job,
     "index":  run_index_job,
     "search": run_search_job,
-        "test_audio_gen":  run_test_audio_gen_job,
-        "agent_test_worker":  run_agent_test_worker_job,
 }
 
 
@@ -34,4 +28,5 @@ def route_worker(job_type, payload):
 
 def list_workers():
     return list(_WORKER_MAP.keys())
+
 

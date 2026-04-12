@@ -80,8 +80,3 @@ def run_search_job(payload):
     content = "\n".join(hits)
     out     = _write_result(aura_path("cloud", "search"), "search", content)
     return {"type": "search", "query": query, "matches": len(hits), "output": out}
-
-
-from cloud.workers.test_audio_gen import run_test_audio_gen_job
-
-from cloud.workers.agent_test_worker import run_agent_test_worker_job
