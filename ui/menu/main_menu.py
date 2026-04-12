@@ -1,11 +1,11 @@
 """
-main_menu.py — AURa OS Operator Console (1-9 main menu + sub-menus).
+main_menu.py — AURa OS Operator Console (1-9, n, b main menu + sub-menus).
 
 Boot flow:
   vhost.py  →  boot_sequence  →  boot_menu  →  launch_menu (here)
 
-Each numbered entry opens a sub-menu with its own numbered prompts,
-headers, and a [0] Back option.
+Each numbered/lettered entry opens a sub-menu with its own numbered
+prompts, headers, and a [0] Back option.
 """
 
 from core.runtime.apm import list_packages, install_package, remove_package, update_packages
@@ -498,13 +498,177 @@ def _menu_settings(env_ctx):
             print(f"  Unknown option: {choice}")
 
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Sub-menu N — Node Agent / Command Center
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _menu_node_agent(env_ctx):
+    _header("n — Node Agent / Command Center")
+
+    from core.runtime.node_agent      import get_agent
+    from core.runtime.command_channel import channel_status, start_command_channel, stop_command_channel
+    from core.runtime.peer_registry   import list_peers, register_peer, remove_peer, ping_all_peers
+    from core.runtime.health          import health_report_text
+
+    agent = env_ctx.get("node_agent") or get_agent()
+
+    while True:
+        ch_st    = channel_status()
+        ch_label = f"port {ch_st['port']}" if ch_st["running"] else "stopped"
+        reg      = "registered" if agent.registered else "unregistered"
+        peers    = list_peers()
+
+        _sub_header("Node Agent")
+        print(f"  Node ID    : {agent.node_id}")
+        print(f"  Name       : {agent.name}")
+        print(f"  CC status  : {reg}")
+        print(f"  Channel    : {ch_label}")
+        print(f"  Peers      : {len(peers)}")
+        print()
+        print("  [1]  Node status (full)")
+        print("  [2]  Health report")
+        print("  [3]  Register with Command Center")
+        print("  [4]  Start / restart command channel")
+        print("  [5]  Stop command channel")
+        print("  [6]  List peers")
+        print("  [7]  Add peer  (node_id url)")
+        print("  [8]  Ping all peers")
+        print("  [9]  Remove peer")
+        print("  [0]  Back")
+        _divider()
+        choice = _prompt("Node")
+
+        if choice == "0":
+            break
+
+        elif choice == "1":
+            status = agent.node_status()
+            for k, v in status.items():
+                if k == "health":
+                    print("    health:")
+                    h = v
+                    print(f"      status   : {h.get('status')}")
+                    print(f"      cpu_pct  : {h.get('cpu', {}).get('load_pct')}%")
+                    print(f"      mem_pct  : {h.get('memory', {}).get('used_pct')}%")
+                    print(f"      disk_pct : {h.get('disk', {}).get('used_pct')}%")
+                else:
+                    print(f"    {k:<18} {v}")
+
+        elif choice == "2":
+            print(health_report_text())
+
+        elif choice == "3":
+            ok = agent.register_with_cc()
+            print(f"  → {'Registered' if ok else 'Registration failed (check cc_url in settings)'}")
+
+        elif choice == "4":
+            res = start_command_channel(node_agent=agent)
+            if res:
+                print(f"  → Command channel running on {res[0]}:{res[1]}")
+            else:
+                print("  → Failed to start (check config or port availability)")
+
+        elif choice == "5":
+            stop_command_channel()
+            print("  → Command channel stopped")
+
+        elif choice == "6":
+            if not peers:
+                print("  No peers registered.")
+            else:
+                for nid, info in peers.items():
+                    print(f"    {nid[:8]}… {info.get('url')}  [{info.get('status', '?')}]")
+
+        elif choice == "7":
+            raw = input("  node_id url: ").strip().split()
+            if len(raw) < 2:
+                print("  Usage: <node_id> <url>")
+            else:
+                nid, url = raw[0], raw[1]
+                p = register_peer(nid, url)
+                print(f"  → Peer added: {p['node_id'][:8]}… @ {p['url']}")
+
+        elif choice == "8":
+            results = ping_all_peers()
+            if not results:
+                print("  No peers to ping.")
+            for nid, ok in results.items():
+                mark = "✓" if ok else "✗"
+                print(f"  [{mark}] {nid[:8]}…")
+
+        elif choice == "9":
+            nid = input("  node_id to remove: ").strip()
+            print(f"  → {remove_peer(nid)}")
+
+        else:
+            print(f"  Unknown option: {choice}")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Sub-menu B — Builder Engine
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _menu_builder(env_ctx):
+    _header("b — Builder Engine")
+
+    from core.runtime.builder import (
+        build_worker, build_command, build_config_stub, list_templates,
+    )
+
+    while True:
+        _sub_header("Builder Engine")
+        print("  [1]  Generate new worker module")
+        print("  [2]  Generate new command handler")
+        print("  [3]  Generate new config stub")
+        print("  [4]  List available templates")
+        print("  [0]  Back")
+        _divider()
+        choice = _prompt("Builder")
+
+        if choice == "0":
+            break
+
+        elif choice == "1":
+            name = input("  Worker name: ").strip()
+            if not name:
+                print("  Name required.")
+                continue
+            result = build_worker(name)
+            print(f"  → {result['status'].upper()} : {result['path']}")
+
+        elif choice == "2":
+            name = input("  Command name: ").strip()
+            if not name:
+                print("  Name required.")
+                continue
+            result = build_command(name)
+            print(f"  → {result['status'].upper()} : {result['path']}")
+
+        elif choice == "3":
+            name = input("  Config name: ").strip()
+            if not name:
+                print("  Name required.")
+                continue
+            result = build_config_stub(name)
+            print(f"  → {result['status'].upper()} : {result['path']}")
+
+        elif choice == "4":
+            for tpl in list_templates():
+                print(f"  {tpl['name']:<12} {tpl['description']}")
+                print(f"              entrypoint: {tpl['entrypoint']}")
+
+        else:
+            print(f"  Unknown option: {choice}")
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Main menu entry point
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def launch_menu(env_ctx=None):
     """
-    Display the AURa OS Operator Console main menu (1-9).
+    Display the AURa OS Operator Console main menu (1-9, n, b).
 
     Parameters
     ----------
@@ -550,6 +714,8 @@ def launch_menu(env_ctx=None):
         print("  │  [7]  System Info                       │")
         print("  │  [8]  Sync & Jobs                       │")
         print("  │  [9]  Settings                          │")
+        print("  │  [n]  Node Agent / Command Center       │")
+        print("  │  [b]  Builder Engine                    │")
         print("  │  [0]  Exit                              │")
         print("  └─────────────────────────────────────────┘")
         print()
@@ -590,5 +756,12 @@ def launch_menu(env_ctx=None):
         elif choice == "9":
             _menu_settings(env_ctx)
 
+        elif choice == "n":
+            _menu_node_agent(env_ctx)
+
+        elif choice == "b":
+            _menu_builder(env_ctx)
+
         else:
-            print(f"  Unknown option '{choice}'. Enter 0–9.")
+            print(f"  Unknown option '{choice}'. Enter 0–9, n, or b.")
+
