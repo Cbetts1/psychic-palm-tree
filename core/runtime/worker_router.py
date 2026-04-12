@@ -29,3 +29,4 @@ def route_worker(job_type, payload):
 def list_workers():
     return list(_WORKER_MAP.keys())
 
+

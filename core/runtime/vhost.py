@@ -5,6 +5,7 @@ from core.runtime.cloud_link import CloudLink
 from core.runtime.vfs import HybridVFS
 from core.runtime.logs import write_log
 from core.runtime.version import load_version
+from core.runtime.config import get as cfg_get
 import importlib.util
 import os
 
@@ -29,6 +30,30 @@ def detect_host():
     return bridge.detect_capabilities()
 
 
+def _start_node_services():
+    """
+    Optionally start the node agent and command channel in background threads.
+    Both are skipped silently if disabled in config or if the port is busy.
+    """
+    from core.runtime.node_agent      import get_agent
+    from core.runtime.command_channel import start_command_channel
+
+    agent  = get_agent()
+    result = start_command_channel(node_agent=agent)
+
+    if result:
+        host, port = result
+        write_log(f"Command channel active on {host}:{port}")
+        print(f"  API     : http://127.0.0.1:{port}/  (command channel)")
+
+    if cfg_get("node", "enabled"):
+        agent.register_with_cc()
+        agent.start_heartbeat()
+        write_log(f"Node agent active: {agent.node_id}")
+
+    return agent
+
+
 def main():
     print_boot_banner()
 
@@ -47,6 +72,10 @@ def main():
     # ── Boot sequence stabilizer ──────────────────────────────────────────────
     from core.runtime.boot_sequence import run_boot_sequence
     env_ctx = run_boot_sequence(host, vnet, cloud, vfs)
+
+    # ── Node agent + command channel ──────────────────────────────────────────
+    agent = _start_node_services()
+    env_ctx["node_agent"] = agent
 
     # ── Boot menu: choose host mode ───────────────────────────────────────────
     from ui.menu.boot_menu import show_boot_menu

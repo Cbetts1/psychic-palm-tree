@@ -80,4 +80,3 @@ def run_search_job(payload):
     content = "\n".join(hits)
     out     = _write_result(aura_path("cloud", "search"), "search", content)
     return {"type": "search", "query": query, "matches": len(hits), "output": out}
-

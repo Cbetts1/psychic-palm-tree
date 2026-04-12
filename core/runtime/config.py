@@ -28,6 +28,19 @@ _DEFAULTS = {
         "mode": "auto",
         "fallback": "offline",
     },
+    "node": {
+        "enabled":            True,
+        "name":               "",
+        "cc_url":             "",
+        "token":              "",
+        "heartbeat_interval": 30,
+    },
+    "command_channel": {
+        "enabled": True,
+        "port":    8731,
+        "bind":    "0.0.0.0",
+        "token":   "",
+    },
     "safe_mode": False,
 }
 
